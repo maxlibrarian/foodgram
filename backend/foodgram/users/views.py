@@ -18,6 +18,22 @@ class UserViewSet(
     mixins.ListModelMixin, mixins.CreateModelMixin,
     mixins.RetrieveModelMixin, viewsets.GenericViewSet
 ):
+    """
+    Вьюсет для управления пользователями.
+
+    Поддерживает:
+    - Регистрация нового пользователя (POST)
+    - Просмотр списка пользователей (GET)
+    - Просмотр профиля конкретного пользователя (GET)
+    - Кастомные действия:
+        - /me — текущий пользователь
+        - /set_password — смена пароля
+        - /me/avatar — управление аватаром
+        - /subscriptions — список подписок
+        - /{id}/subscribe — подписка/отписка
+
+    Использует разные сериализаторы для создания и чтения.
+    """
     queryset = User.objects.all()
     permission_classes = [AllowAny]
 

@@ -6,6 +6,8 @@ User = get_user_model()
 
 
 class Tag(models.Model):
+    """Модель тэгов рецептов."""
+
     name = models.CharField(
         max_length=32, unique=True, verbose_name='Название'
     )
@@ -20,6 +22,8 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    """Модель ингредиентов рецептов."""
+
     name = models.CharField(max_length=128, verbose_name='Название')
     measurement_unit = models.CharField(
         max_length=64, verbose_name='Ед. измерения'
@@ -36,6 +40,8 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
+    """Модель, описывающая рецепты."""
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='recipes', verbose_name='Автор'
@@ -65,6 +71,8 @@ class Recipe(models.Model):
 
 
 class RecipeTag(models.Model):
+    """Промежуточная модель тэгов-рецептов."""
+
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, verbose_name='Рецепт'
     )
@@ -77,6 +85,8 @@ class RecipeTag(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """Промежуточная модель игредиентов-рецептов."""
+
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, verbose_name='Рецепт'
     )
@@ -92,6 +102,8 @@ class RecipeIngredient(models.Model):
 
 
 class Favorite(models.Model):
+    """Модель избранное."""
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='favorites', verbose_name='Пользователь'
@@ -108,6 +120,8 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
+    """Модель для продуктовой корзины."""
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='shopping_cart', verbose_name='Пользователь'
@@ -124,6 +138,8 @@ class ShoppingCart(models.Model):
 
 
 class ShortLink(models.Model):
+    """Модель для коротких ссылок."""
+
     recipe = models.OneToOneField(
         Recipe, on_delete=models.CASCADE,
         related_name='short_link', verbose_name='Рецепт'

@@ -20,6 +20,12 @@ from .services import (
 
 # ReadOnly на дженериках
 class TagListView(generics.ListAPIView):
+    """
+    Возвращает список всех тегов.
+    Используется для отображения доступных тегов (например, в фильтрах).
+    Не требует аутентификации.
+    Пагинация отключена — возвращает все теги сразу.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
@@ -27,6 +33,9 @@ class TagListView(generics.ListAPIView):
 
 
 class TagDetailView(generics.RetrieveAPIView):
+    """
+    Возвращает детальную информацию о конкретном теге по его ID.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
@@ -34,6 +43,9 @@ class TagDetailView(generics.RetrieveAPIView):
 
 
 class IngredientListView(generics.ListAPIView):
+    """
+    Возвращает список всех ингредиентов с возможностью поиска по названию.
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
@@ -42,6 +54,9 @@ class IngredientListView(generics.ListAPIView):
 
 
 class IngredientDetailView(generics.RetrieveAPIView):
+    """
+    Возвращает детальную информацию об ингредиенте
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
@@ -49,6 +64,9 @@ class IngredientDetailView(generics.RetrieveAPIView):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Полный CRUD для рецептов: просмотр, создание, редактирование, удаление.
+    """
     queryset = (
         Recipe.objects.select_related('author')
         .prefetch_related('tags', 'recipeingredient_set__ingredient')
@@ -57,6 +75,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_permissions(self):
+        """
+        Динамически назначает права в зависимости от действия:
+        - create: только авторизованный пользователь.
+        - partial_update, destroy: авторизованный + проверка авторства.
+        - остальные (list, retrieve): разрешено всем.
+        """
         if self.action in ('create', 'partial_update', 'destroy'):
             if self.action == 'create':
                 return [IsAuthenticated()]
@@ -64,6 +88,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return [AllowAny()]
 
     def get_serializer_class(self):
+        """
+        Использует разные сериализаторы:
+        - RecipeListSerializer — для списка и деталей.
+        - RecipeCreateUpdateSerializer — для создания и редактирования.
+        """
         return (
             RecipeListSerializer if self.action in ('list', 'retrieve')
             else RecipeCreateUpdateSerializer
@@ -71,10 +100,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _build_short_link(request, code: str) -> str:
+        """Строит полную короткую ссылку."""
+
         base = request.build_absolute_uri('/')[:-1]
         return f"{base}/s/{code}"
 
     def get_link(self, request, pk=None):
+        """Возвращает короткую ссылку на рецепт."""
+
         import secrets
         recipe = self.get_object()
         link, _ = ShortLink.objects.get_or_create(
@@ -86,6 +119,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteView(APIView):
+    """
+    Управление добавлением/удалением рецепта в избранное.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
@@ -110,6 +146,9 @@ class FavoriteView(APIView):
 
 
 class ShoppingCartView(APIView):
+    """
+    Управление списком покупок: добавление и удаление рецептов.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
@@ -134,6 +173,9 @@ class ShoppingCartView(APIView):
 
 
 class DownloadShoppingCartView(APIView):
+    """
+    Скачивание списка покупок в виде текстового файла.
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
