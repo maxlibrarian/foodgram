@@ -1,13 +1,15 @@
 FROM python:3.9
 
+# Устанавливаем рабочую директорию — это будет корень проекта
 WORKDIR /app
 
+# Копируем requirements.txt и устанавливаем зависимости
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install -r requirements.txt --no-cache-dir
+# Копируем ВЕСЬ код из backend/foodgram/ в /app
+COPY foodgram/ /app/
 
-COPY . .
 
-ENV PYTHONPATH=/app
-
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.foodgram.wsgi:application"]
+# Запускаем Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi:application"]
