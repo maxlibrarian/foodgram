@@ -39,7 +39,7 @@ services:
     image: mroom/foodgram_gateway
     env_file: .env
     ports:
-      - 8500:80
+      - 8001:80
     volumes:
       - static:/staticfiles
       - media:/media
