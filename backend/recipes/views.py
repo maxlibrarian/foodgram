@@ -1,7 +1,8 @@
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from rest_framework import generics, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -112,6 +113,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         base = request.build_absolute_uri('/')[:-1]
         return f"{base}/s/{code}"
 
+    @action(
+        detail=True, methods=['get'],
+        permission_classes=[AllowAny], url_path='get-link'
+    )
     def get_link(self, request, pk=None):
         """Возвращает короткую ссылку на рецепт."""
 
@@ -195,3 +200,8 @@ class DownloadShoppingCartView(APIView):
             'attachment; filename=shopping_list.txt'
         )
         return response
+
+
+def shortlink_redirect(request, code: str):
+    link = get_object_or_404(ShortLink, code=code)
+    return redirect(f"/recipes/{link.recipe.id}/")
