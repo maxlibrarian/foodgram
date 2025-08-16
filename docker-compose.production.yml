@@ -28,12 +28,12 @@ services:
         condition: service_healthy
     restart: on-failure
 
-  # frontend:
-  #   env_file: .env
-  #   image: mroom/foodgram_frontend
-  #   command: cp -r /app/build/. /static/
-  #   volumes:
-  #     - static:/static
+  frontend:
+    env_file: .env
+    image: mroom/foodgram_frontend
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
 
   gateway:
     image: mroom/foodgram_gateway
