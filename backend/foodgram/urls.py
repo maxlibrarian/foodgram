@@ -6,6 +6,7 @@ from django.urls import include, path
 from recipes.views import shortlink_redirect
 
 urlpatterns = [
+    path("s/<str:code>", shortlink_redirect, name="shortlink-no-slash"),
     path("s/<str:code>/", shortlink_redirect, name="shortlink"),
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
