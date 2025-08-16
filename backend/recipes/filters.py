@@ -1,5 +1,6 @@
 import django_filters as df
-from .models import Recipe, Ingredient
+
+from .models import Ingredient, Recipe
 
 
 class RecipeFilter(df.FilterSet):

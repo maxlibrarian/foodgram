@@ -1,21 +1,19 @@
 from django.http import HttpResponse
-from rest_framework import viewsets, generics
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.shortcuts import get_object_or_404
 
-from .models import Tag, Ingredient, Recipe, ShortLink
-from .serializers import (
-    TagSerializer, IngredientSerializer, RecipeListSerializer,
-    RecipeCreateUpdateSerializer, RecipeMinifiedSerializer
-)
-from .filters import RecipeFilter, IngredientFilter
 from users.permissions import IsAuthorOrReadOnly
-from .services import (
-    add_to_favorite, remove_from_favorite,
-    add_to_cart, remove_from_cart, aggregate_shopping_list
-)
+
+from .filters import IngredientFilter, RecipeFilter
+from .models import Ingredient, Recipe, ShortLink, Tag
+from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
+                          RecipeListSerializer, RecipeMinifiedSerializer,
+                          TagSerializer)
+from .services import (add_to_cart, add_to_favorite, aggregate_shopping_list,
+                       remove_from_cart, remove_from_favorite)
 
 
 # ReadOnly на дженериках

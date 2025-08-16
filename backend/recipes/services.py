@@ -1,5 +1,6 @@
 from django.db.models import Sum
-from .models import Favorite, ShoppingCart, Ingredient, Recipe
+
+from .models import Favorite, Ingredient, Recipe, ShoppingCart
 
 
 def add_to_favorite(user, recipe: Recipe) -> bool:

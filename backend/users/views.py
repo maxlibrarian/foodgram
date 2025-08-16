@@ -1,15 +1,13 @@
-from rest_framework import viewsets, mixins
+from django.contrib.auth import get_user_model
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from django.contrib.auth import get_user_model
 from .models import Subscription
-from .serializers import (
-    UserSerializer, UserCreateSerializer, UserWithRecipesSerializer,
-    SetPasswordSerializer, SetAvatarSerializer,
-)
-
+from .serializers import (SetAvatarSerializer, SetPasswordSerializer,
+                          UserCreateSerializer, UserSerializer,
+                          UserWithRecipesSerializer)
 
 User = get_user_model()
 
