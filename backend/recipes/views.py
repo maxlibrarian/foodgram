@@ -78,7 +78,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = (
         Recipe.objects.select_related('author')
         .prefetch_related('tags', 'recipeingredient_set__ingredient')
-        .all()
+        .order_by('-id')
     )
     filterset_class = RecipeFilter
 
