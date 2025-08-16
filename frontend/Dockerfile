@@ -1,9 +1,22 @@
-# build env
-FROM node:21.7.1-alpine
-ENV npm_config_legacy_peer_deps=true
+# # build env
+# FROM node:21.7.1-alpine
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm install --legacy-peer-deps
+# COPY . ./
+# RUN npm run build
+# CMD cp -r build result_build
+
+FROM node:18
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . ./
+
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+
+RUN npm ci
+
+COPY . .
 RUN npm run build
-CMD cp -r build result_build
+RUN npm install --global http-server
+
+CMD ["npx", "-y", "http-server", "-p", "8000", "/app/build"]
