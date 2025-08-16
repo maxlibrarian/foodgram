@@ -1,6 +1,6 @@
+from api.fields import Base64ImageField
 from rest_framework import serializers
 
-from api.fields import Base64ImageField
 from recipes.models import Recipe
 
 from .models import Subscription, User

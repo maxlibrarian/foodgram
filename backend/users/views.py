@@ -5,9 +5,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Subscription
-from .serializers import (SetAvatarSerializer, SetPasswordSerializer,
-                          UserCreateSerializer, UserSerializer,
-                          UserWithRecipesSerializer)
+from .serializers import (
+    SetAvatarSerializer,
+    SetPasswordSerializer,
+    UserCreateSerializer,
+    UserSerializer,
+    UserWithRecipesSerializer,
+)
 
 User = get_user_model()
 

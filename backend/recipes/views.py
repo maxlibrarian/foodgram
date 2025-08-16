@@ -9,11 +9,20 @@ from users.permissions import IsAuthorOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
 from .models import Ingredient, Recipe, ShortLink, Tag
-from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
-                          RecipeListSerializer, RecipeMinifiedSerializer,
-                          TagSerializer)
-from .services import (add_to_cart, add_to_favorite, aggregate_shopping_list,
-                       remove_from_cart, remove_from_favorite)
+from .serializers import (
+    IngredientSerializer,
+    RecipeCreateUpdateSerializer,
+    RecipeListSerializer,
+    RecipeMinifiedSerializer,
+    TagSerializer,
+)
+from .services import (
+    add_to_cart,
+    add_to_favorite,
+    aggregate_shopping_list,
+    remove_from_cart,
+    remove_from_favorite,
+)
 
 
 # ReadOnly на дженериках
