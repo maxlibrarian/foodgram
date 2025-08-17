@@ -140,7 +140,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Суммирует одинаковые ингредиенты по всем рецептам в корзине.
         """
         lines = aggregate_shopping_list(request.user)
-        header = 'Список покупок'
+        header = 'Список покупок: \n'
         body = '\n'.join(lines) if lines else 'Список пуст.'
         response = HttpResponse(
             header + body, content_type='text/plain; charset=utf-8'
