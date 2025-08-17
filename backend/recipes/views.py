@@ -79,6 +79,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Recipe.objects.select_related('author')
         .prefetch_related('tags', 'recipeingredient_set__ingredient')
         .order_by('-id')
+        .distinct()
     )
     filterset_class = RecipeFilter
 
@@ -128,6 +129,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(
             {'short-link': self._build_short_link(request, link.code)}
         )
+
+    @action(
+        detail=False, methods=['get'],
+        permission_classes=[IsAuthenticated],
+        url_path='download_shopping_cart'
+    )
+    def download_shopping_cart(self, request):
+        """Скачать агрегированный список покупок.
+        Суммирует одинаковые ингредиенты по всем рецептам в корзине.
+        """
+        lines = aggregate_shopping_list(request.user)
+        header = 'Список покупок'
+        body = '\n'.join(lines) if lines else 'Список пуст.'
+        response = HttpResponse(
+            header + body, content_type='text/plain; charset=utf-8'
+        )
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_list.txt"'
+        )
+        return response
 
 
 class FavoriteView(APIView):
@@ -182,24 +203,6 @@ class ShoppingCartView(APIView):
                 {'detail': 'Не было в списке покупок.'}, status=400
             )
         return Response(status=204)
-
-
-class DownloadShoppingCartView(APIView):
-    """
-    Скачивание списка покупок в виде текстового файла.
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        lines = aggregate_shopping_list(request.user)
-        content = " ".join(lines) or 'Список пуст'
-        response = HttpResponse(
-            content, content_type='text/plain; charset=utf-8'
-        )
-        response['Content-Disposition'] = (
-            'attachment; filename=shopping_list.txt'
-        )
-        return response
 
 
 def shortlink_redirect(request, code: str):

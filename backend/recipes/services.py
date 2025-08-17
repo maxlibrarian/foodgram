@@ -1,6 +1,6 @@
-from django.db.models import Sum
+from django.db.models import Sum, F
 
-from .models import Favorite, Ingredient, Recipe, ShoppingCart
+from .models import Favorite, Recipe, ShoppingCart
 
 
 def add_to_favorite(user, recipe: Recipe) -> bool:
@@ -24,13 +24,16 @@ def remove_from_cart(user, recipe: Recipe) -> bool:
 
 
 def aggregate_shopping_list(user):
+    """Суммирует одинаковые ингредиенты (по имени и ед. изм.)
+    """
+    from .models import RecipeIngredient
     qs = (
-        Ingredient.objects.filter(recipes__in_carts__user=user)
-        .values('name', 'measurement_unit')
-        .annotate(total=Sum('recipeingredient__amount'))
+        RecipeIngredient.objects
+        .filter(recipe__in_carts__user=user)
+        .values(
+            name=F('ingredient__name'), unit=F('ingredient__measurement_unit')
+        )
+        .annotate(total=Sum('amount'))
         .order_by('name')
     )
-    return [
-        f"{i['name']} ({i['measurement_unit']}) — {i['total']}"
-        for i in qs
-    ]
+    return [f"{row['name']} ({row['unit']}) — {row['total']}" for row in qs]

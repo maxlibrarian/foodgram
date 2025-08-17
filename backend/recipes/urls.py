@@ -2,7 +2,6 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    DownloadShoppingCartView,
     FavoriteView,
     IngredientDetailView,
     IngredientListView,
@@ -37,11 +36,6 @@ urlpatterns = [
         'recipes/<int:pk>/shopping_cart/',
         ShoppingCartView.as_view(),
         name='recipe-cart'
-    ),
-    path(
-        'recipes/download_shopping_cart/',
-        DownloadShoppingCartView.as_view(),
-        name='download-cart'
     ),
     path(
         'recipes/<int:pk>/get-link/',

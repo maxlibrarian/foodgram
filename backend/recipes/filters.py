@@ -1,17 +1,27 @@
 import django_filters as df
 
-from .models import Ingredient, Recipe
+from .models import Ingredient, Recipe, Tag
 
 
 class RecipeFilter(df.FilterSet):
     is_favorited = df.NumberFilter(method='filter_bool')
     is_in_shopping_cart = df.NumberFilter(method='filter_bool')
     author = df.NumberFilter(field_name='author__id')
-    tags = df.AllValuesMultipleFilter(field_name='tags__slug')
+    tags = df.ModelMultipleChoiceFilter(
+        field_name='tags__slug', to_field_name='slug',
+        queryset=Tag.objects.all(),
+        method='filter_tags_any'
+    )
 
     class Meta:
         model = Recipe
         fields = ('author', 'tags')
+
+    def filter_tags_any(self, queryset, name, value):
+        slugs = list(value.values_list('slug', flat=True))
+        if not slugs:
+            return queryset
+        return queryset.filter(tags__slug__in=slugs).distinct()
 
     def filter_bool(self, queryset, name, value):
         user = getattr(self.request, 'user', None)
