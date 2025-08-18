@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 from users.serializers import UserSerializer
 
-from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from . import constants as c
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
