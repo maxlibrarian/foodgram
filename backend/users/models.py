@@ -32,10 +32,10 @@ class Subscription(models.Model):
     """Подписка на автора."""
 
     user = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='follower'
+        'User', on_delete=models.CASCADE, related_name='following'
     )
     author = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='following'
+        'User', on_delete=models.CASCADE, related_name='follower'
     )
 
     class Meta:

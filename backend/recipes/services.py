@@ -1,25 +1,25 @@
 from django.db.models import Sum, F
 
-from .models import Favorite, Recipe, ShoppingCart
+from .models import Recipe
 
 
 def add_to_favorite(user, recipe: Recipe) -> bool:
-    obj, created = Favorite.objects.get_or_create(user=user, recipe=recipe)
+    obj, created = user.favorites.get_or_create(recipe=recipe)
     return created
 
 
 def remove_from_favorite(user, recipe: Recipe) -> bool:
-    deleted, _ = Favorite.objects.filter(user=user, recipe=recipe).delete()
+    deleted, _ = user.favorites.filter(recipe=recipe).delete()
     return bool(deleted)
 
 
 def add_to_cart(user, recipe: Recipe) -> bool:
-    obj, created = ShoppingCart.objects.get_or_create(user=user, recipe=recipe)
+    obj, created = user.shopping_cart.get_or_create(recipe=recipe)
     return created
 
 
 def remove_from_cart(user, recipe: Recipe) -> bool:
-    deleted, _ = ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
+    deleted, _ = user.shopping_cart.filter(recipe=recipe).delete()
     return bool(deleted)
 
 

@@ -3,6 +3,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from http import HTTPStatus
 
 from .models import Subscription
 from .serializers import (
@@ -64,11 +65,12 @@ class UserViewSet(
             ser.validated_data['current_password']
         ):
             return Response(
-                {'current_password': ['Неверный пароль.']}, status=400
+                {'current_password': ['Неверный пароль.']},
+                status=HTTPStatus.BAD_REQUEST
             )
         request.user.set_password(ser.validated_data['new_password'])
         request.user.save()
-        return Response(status=204)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=False, methods=['put'],
@@ -81,14 +83,15 @@ class UserViewSet(
         request.user.avatar = ser.validated_data['avatar']
         request.user.save()
         return Response(
-            {'avatar': request.build_absolute_uri(request.user.avatar.url)}
+            {'avatar': request.build_absolute_uri(request.user.avatar.url)},
+            status=HTTPStatus.OK
         )
 
     @set_avatar.mapping.delete
     def delete_avatar(self, request):
         if request.user.avatar:
             request.user.avatar.delete(save=True)
-        return Response(status=204)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=False, methods=['get'],
@@ -112,24 +115,29 @@ class UserViewSet(
         author = self.get_object()
         if author == request.user:
             return Response(
-                {'detail': 'Нельзя подписаться на себя.'}, status=400
+                {'detail': 'Нельзя подписаться на себя.'},
+                status=HTTPStatus.BAD_REQUEST
             )
         obj, created = Subscription.objects.get_or_create(
             user=request.user, author=author
         )
         if not created:
-            return Response({'detail': 'Уже подписаны.'}, status=400)
+            return Response(
+                {'detail': 'Уже подписаны.'},
+                status=HTTPStatus.BAD_REQUEST
+            )
         data = UserWithRecipesSerializer(
             author, context={'request': request}
         ).data
-        return Response(data, status=201)
+        return Response(data, status=HTTPStatus.CREATED)
 
     @subscribe.mapping.delete
     def unsubscribe(self, request, pk=None):
         author = self.get_object()
-        deleted, _ = Subscription.objects.filter(
-            user=request.user, author=author
-        ).delete()
+        deleted, _ = request.user.following.filter(author=author).delete()
         if not deleted:
-            return Response({'detail': 'Подписки не было.'}, status=400)
-        return Response(status=204)
+            return Response(
+                {'detail': 'Подписки не было.'},
+                status=HTTPStatus.BAD_REQUEST
+            )
+        return Response(status=HTTPStatus.NO_CONTENT)

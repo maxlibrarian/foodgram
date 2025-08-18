@@ -3,7 +3,8 @@ from rest_framework import serializers
 
 from users.serializers import UserSerializer
 
-from .models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
+from . import constants as c
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -32,7 +33,14 @@ class IngredientInRecipeReadSerializer(serializers.ModelSerializer):
 
 class IngredientAmountWriteSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    amount = serializers.IntegerField(min_value=1)
+    amount = serializers.IntegerField(
+        min_value=c.MIN_INGREDIENT_AMOUNT,
+        max_value=c.MAX_INGREDIENT_AMOUNT,
+        error_messages={
+            'min_value': c.INGREDIENT_AMOUNT_MIN_ERROR,
+            'max_value': c.INGREDIENT_AMOUNT_MAX_ERROR
+        }
+    )
 
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
@@ -59,10 +67,10 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
     def _check(self, model, obj):
-        user = self.context.get('request').user
-        if not user or not user.is_authenticated:
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
             return False
-        return model.objects.filter(user=user, recipe=obj).exists()
+        return model.objects.filter(user=request.user, recipe=obj).exists()
 
     def get_is_favorited(self, obj):
         from .models import Favorite
@@ -79,7 +87,14 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(), allow_empty=False, write_only=True
     )
     image = Base64ImageField()
-    cooking_time = serializers.IntegerField(min_value=1)
+    cooking_time = serializers.IntegerField(
+        min_value=c.MIN_COOKING_TIME,
+        max_value=c.MAX_COOKING_TIME,
+        error_messages={
+            'min_value': c.MIN_COOKING_TIME_ERROR,
+            'max_value': c.MAX_COOKING_TIME_ERROR
+        }
+    )
 
     class Meta:
         model = Recipe
@@ -90,48 +105,44 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
     def validate(self, attrs):
-        errors = {}
         ingredients = attrs.get('ingredients')
         tags = attrs.get('tags')
-
         if not ingredients:
-            errors.setdefault('ingredients', []).append('Обязательное поле.')
-        else:
-            ids = [it['id'] for it in ingredients]
-            if len(set(ids)) != len(ids):
-                errors.setdefault('ingredients', []).append(
-                    'Ингредиенты не должны повторяться.'
-                )
-            existing_ids = set(
-                Ingredient.objects.filter(id__in=ids).values_list(
-                    'id', flat=True
-                )
-            )
-            missing = [i for i in ids if i not in existing_ids]
-            if missing:
-                errors.setdefault('ingredients', []).append(
-                    'Некоторые ингредиенты не найдены.'
-                )
+            raise serializers.ValidationError({
+                'ingredients': ['Обязательное поле.']
+            })
+        ids = [item['id'] for item in ingredients]
+        if len(ids) != len(set(ids)):
+            raise serializers.ValidationError({
+                'ingredients': ['Ингредиенты не должны повторяться.']
+            })
+        existing_ingredient_ids = set(
+            Ingredient.objects.filter(id__in=ids).values_list('id', flat=True)
+        )
+        missing_ingredients = [
+            i for i in ids if i not in existing_ingredient_ids
+        ]
+        if missing_ingredients:
+            raise serializers.ValidationError({
+                'ingredients': ['Некоторые ингредиенты не найдены.']
+            })
         if not tags:
-            errors.setdefault('tags', []).append('Обязательное поле.')
-        else:
-            if len(set(tags)) != len(tags):
-                errors.setdefault('tags', []).append(
-                    'Теги не должны повторяться.'
-                )
-            existing_tag_ids = set(
-                Tag.objects.filter(id__in=tags).values_list(
-                    'id', flat=True
-                )
-            )
-            missing_tags = [t for t in tags if t not in existing_tag_ids]
-            if missing_tags:
-                errors.setdefault('tags', []).append(
-                    'Некоторые теги не найдены.'
-                )
+            raise serializers.ValidationError({
+                'tags': ['Обязательное поле.']
+            })
+        if len(tags) != len(set(tags)):
+            raise serializers.ValidationError({
+                'tags': ['Теги не должны повторяться.']
+            })
+        existing_tag_ids = set(
+            Tag.objects.filter(id__in=tags).values_list('id', flat=True)
+        )
+        missing_tags = [t for t in tags if t not in existing_tag_ids]
+        if missing_tags:
+            raise serializers.ValidationError({
+                'tags': ['Некоторые теги не найдены.']
+            })
 
-        if errors:
-            raise serializers.ValidationError(errors)
         return attrs
 
     def _save_m2m(self, recipe, ingredients, tags):
@@ -139,16 +150,15 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         Хелпер, который синхронизирует связи «многие-ко-многим»
         у рецепта после валидации данных.
         """
-        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        recipe.recipe_ingredients.all().delete()
         for item in ingredients:
             ingredient = Ingredient.objects.get(pk=item['id'])
             RecipeIngredient.objects.create(
-                recipe=recipe, ingredient=ingredient, amount=item['amount']
+                recipe=recipe,
+                ingredient=ingredient,
+                amount=item['amount']
             )
-        RecipeTag.objects.filter(recipe=recipe).delete()
-        for tag_id in tags:
-            tag = Tag.objects.get(pk=tag_id)
-            recipe.tags.add(tag)
+        recipe.tags.set(tags)
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')

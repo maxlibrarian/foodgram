@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from http import HTTPStatus
 
 from users.permissions import IsAuthorOrReadOnly
 
@@ -26,7 +27,6 @@ from .services import (
 )
 
 
-# ReadOnly на дженериках
 class TagListView(generics.ListAPIView):
     """
     Возвращает список всех тегов.
@@ -161,11 +161,14 @@ class FavoriteView(APIView):
         recipe = get_object_or_404(Recipe, pk=pk)
         created = add_to_favorite(request.user, recipe)
         if not created:
-            return Response({'detail': 'Рецепт уже в избранном.'}, status=400)
+            return Response(
+                {'detail': 'Рецепт уже в избранном.'},
+                status=HTTPStatus.BAD_REQUEST
+            )
         return Response(
             RecipeMinifiedSerializer(
                 recipe, context={'request': request}
-            ).data, status=201
+            ).data, status=HTTPStatus.CREATED
         )
 
     def delete(self, request, pk):
@@ -173,9 +176,10 @@ class FavoriteView(APIView):
         removed = remove_from_favorite(request.user, recipe)
         if not removed:
             return Response(
-                {'detail': 'Рецепта не было в избранном.'}, status=400
+                {'detail': 'Рецепта не было в избранном.'},
+                status=HTTPStatus.BAD_REQUEST
             )
-        return Response(status=204)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
 
 class ShoppingCartView(APIView):
@@ -188,11 +192,14 @@ class ShoppingCartView(APIView):
         recipe = get_object_or_404(Recipe, pk=pk)
         created = add_to_cart(request.user, recipe)
         if not created:
-            return Response({'detail': 'Уже в списке покупок.'}, status=400)
+            return Response(
+                {'detail': 'Уже в списке покупок.'},
+                status=HTTPStatus.BAD_REQUEST
+            )
         return Response(
             RecipeMinifiedSerializer(
                 recipe, context={'request': request}
-            ).data, status=201
+            ).data, status=HTTPStatus.CREATED
         )
 
     def delete(self, request, pk):
@@ -200,11 +207,12 @@ class ShoppingCartView(APIView):
         removed = remove_from_cart(request.user, recipe)
         if not removed:
             return Response(
-                {'detail': 'Не было в списке покупок.'}, status=400
+                {'detail': 'Не было в списке покупок.'},
+                status=HTTPStatus.BAD_REQUEST
             )
-        return Response(status=204)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
 
 def shortlink_redirect(request, code: str):
     link = get_object_or_404(ShortLink, code=code)
-    return redirect(f"/recipes/{link.recipe.id}/")
+    return redirect(f'/recipes/{link.recipe.id}/')

@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from recipes.models import Recipe
 
-from .models import Subscription, User
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,10 +20,10 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if not user or not user.is_authenticated:
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
             return False
-        return Subscription.objects.filter(user=user, author=obj).exists()
+        return request.user.following.filter(author=obj).exists()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
