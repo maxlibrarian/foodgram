@@ -4,7 +4,11 @@ from rest_framework import serializers
 from users.serializers import UserSerializer
 
 from . import constants as c
-from .models import Ingredient, Recipe, RecipeIngredient, Tag
+from .models import (
+    Ingredient, Recipe,
+    RecipeIngredient, Tag,
+    Favorite, ShoppingCart
+)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -73,11 +77,9 @@ class RecipeListSerializer(serializers.ModelSerializer):
         return model.objects.filter(user=request.user, recipe=obj).exists()
 
     def get_is_favorited(self, obj):
-        from .models import Favorite
         return self._check(Favorite, obj)
 
     def get_is_in_shopping_cart(self, obj):
-        from .models import ShoppingCart
         return self._check(ShoppingCart, obj)
 
 

@@ -1,3 +1,4 @@
+import secrets
 from http import HTTPStatus
 
 from django.http import HttpResponse
@@ -122,7 +123,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         """Возвращает короткую ссылку на рецепт."""
 
-        import secrets
         recipe = self.get_object()
         link, _ = ShortLink.objects.get_or_create(
             recipe=recipe, defaults={'code': secrets.token_urlsafe(3)}

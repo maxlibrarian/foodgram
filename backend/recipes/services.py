@@ -1,6 +1,6 @@
 from django.db.models import F, Sum
 
-from .models import Recipe
+from .models import Recipe, RecipeIngredient
 
 
 def add_to_favorite(user, recipe: Recipe) -> bool:
@@ -26,7 +26,6 @@ def remove_from_cart(user, recipe: Recipe) -> bool:
 def aggregate_shopping_list(user):
     """Суммирует одинаковые ингредиенты (по имени и ед. изм.)
     """
-    from .models import RecipeIngredient
     qs = (
         RecipeIngredient.objects
         .filter(recipe__in_carts__user=user)
