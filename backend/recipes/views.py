@@ -92,9 +92,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         - partial_update, destroy: авторизованный + проверка авторства.
         - остальные (list, retrieve): разрешено всем.
         """
-        if self.action in ('create', 'partial_update', 'destroy'):
-            if self.action == 'create':
-                return [IsAuthenticated()]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        if self.action in ('partial_update', 'destroy'):
             return [IsAuthenticated(), IsAuthorOrReadOnly()]
         return [AllowAny()]
 

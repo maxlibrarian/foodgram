@@ -9,4 +9,4 @@ class IsAuthorOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return getattr(obj, 'author', None) == request.user
+        return obj.author == request.user or request.user.is_staff
