@@ -99,7 +99,7 @@ class RecipeTag(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return self.recipe
+        return f"{self.recipe.name} — {self.tag.name}"
 
 
 class RecipeIngredient(models.Model):
@@ -134,7 +134,10 @@ class RecipeIngredient(models.Model):
         ordering = ['-recipe']
 
     def __str__(self):
-        return self.recipe
+        return (
+            f"{self.recipe.name} — {self.ingredient.name}"
+            f"({self.amount} {self.ingredient.measurement_unit})"
+        )
 
 
 class Favorite(models.Model):
@@ -156,7 +159,7 @@ class Favorite(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return self.user
+        return f"{self.user.username} — {self.recipe.name}"
 
 
 class ShoppingCart(models.Model):
@@ -178,7 +181,7 @@ class ShoppingCart(models.Model):
         ordering = ['-recipe']
 
     def __str__(self):
-        return self.recipe
+        return f"{self.user.username} — {self.recipe.name}"
 
 
 class ShortLink(models.Model):
